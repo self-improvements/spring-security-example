@@ -15,4 +15,8 @@ public class UserService {
         return mapper.selectUserById(id);
     }
 
+    public void createLoginHistory() {
+
+    }
+
 }

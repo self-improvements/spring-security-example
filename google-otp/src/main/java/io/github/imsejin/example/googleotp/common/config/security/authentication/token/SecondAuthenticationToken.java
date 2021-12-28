@@ -1,5 +1,6 @@
 package io.github.imsejin.example.googleotp.common.config.security.authentication.token;
 
+import io.github.imsejin.common.assertion.Asserts;
 import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,6 +32,13 @@ public class SecondAuthenticationToken extends AbstractAuthenticationToken {
         super(Collections.singletonList(AUTHORITY));
         this.principal = principal;
         this.credentials = credentials;
+
+        Asserts.that(principal)
+                .as("SecondAuthenticationToken.principal is not allowed to be null")
+                .isNotNull();
+        Asserts.that(credentials)
+                .as("SecondAuthenticationToken.credentials must be numeric as OTP code, but it is: {0}", credentials)
+                .isNotNull().isNumeric();
     }
 
     @Override

@@ -15,8 +15,10 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class SecondAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
@@ -33,11 +35,6 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         super(new AntPathRequestMatcher(requestPattern, HttpMethod.POST.name()));
     }
 
-    @NonNull
-    private static String getParamFromRequest(HttpServletRequest request, String name) {
-        return StringUtils.ifNullOrEmpty(request.getParameter(name), "").trim();
-    }
-
     @Override
     protected boolean requiresAuthentication(HttpServletRequest request, HttpServletResponse response) {
         boolean required = super.requiresAuthentication(request, response);
@@ -51,6 +48,7 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         }
 
         required &= (token instanceof FirstAuthenticationToken);
+        required &= (token.getPrincipal() instanceof User);
 
         return required;
     }
@@ -66,6 +64,18 @@ public class SecondAuthenticationFilter extends AbstractAuthenticationProcessing
         Authentication token = new SecondAuthenticationToken(username, secretKey);
 
         return super.getAuthenticationManager().authenticate(token);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed)
+            throws IOException, ServletException {
+        // DO NOT CLEAR SECURITY CONTEXT; sustain FirstAuthenticationToken in SecurityContext.
+        super.getFailureHandler().onAuthenticationFailure(request, response, failed);
+    }
+
+    @NonNull
+    private static String getParamFromRequest(HttpServletRequest request, String name) {
+        return StringUtils.ifNullOrEmpty(request.getParameter(name), "").trim();
     }
 
 }
