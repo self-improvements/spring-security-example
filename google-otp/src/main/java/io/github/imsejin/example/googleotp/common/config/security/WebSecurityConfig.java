@@ -2,6 +2,7 @@ package io.github.imsejin.example.googleotp.common.config.security;
 
 import io.github.imsejin.common.assertion.Asserts;
 import io.github.imsejin.example.googleotp.api.user.service.UserService;
+import io.github.imsejin.example.googleotp.common.config.security.authentication.filter.DuplicatedAuthenticationProtectionFilter;
 import io.github.imsejin.example.googleotp.common.config.security.authentication.filter.FirstAuthenticationFilter;
 import io.github.imsejin.example.googleotp.common.config.security.authentication.filter.SecondAuthenticationFilter;
 import io.github.imsejin.example.googleotp.common.config.security.authentication.handler.SecondAuthenticationSuccessHandler;
@@ -12,6 +13,7 @@ import io.github.imsejin.example.googleotp.common.config.security.authentication
 import io.github.imsejin.example.googleotp.common.config.security.tool.GoogleOtpProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
@@ -31,6 +33,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 
+import javax.servlet.Filter;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import java.net.URL;
@@ -63,6 +66,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements H
     private final GoogleOtpProvider otpProvider = new GoogleOtpProvider();
 
     private final UserService service;
+
+    private final ServerProperties props;
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) {
@@ -130,9 +135,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements H
         secondFilter.setAuthenticationSuccessHandler(new SecondAuthenticationSuccessHandler(HOME_PATH, service));
         secondFilter.setAuthenticationFailureHandler(new SimpleUrlAuthenticationFailureHandler(SECOND_LOGIN_ENTRY_POINT + "?error"));
 
+        // Protector for duplicated authentication.
+        Filter protectionFilter = new DuplicatedAuthenticationProtectionFilter(props, FIRST_LOGIN_ENTRY_POINT,
+                FIRST_LOGIN_PATH, SECOND_LOGIN_ENTRY_POINT, SECOND_LOGIN_PATH);
 
         http.addFilterAfter(firstFilter, LogoutFilter.class) // FirstAuthenticationFilter
-                .addFilterAfter(secondFilter, FirstAuthenticationFilter.class); // SecondAuthenticationFilter
+                .addFilterAfter(secondFilter, FirstAuthenticationFilter.class) // SecondAuthenticationFilter
+                .addFilterBefore(protectionFilter, LogoutFilter.class); // DuplicatedAuthenticationProtectionFilter
     }
 
     private static void logout(HttpSecurity http) throws Exception {

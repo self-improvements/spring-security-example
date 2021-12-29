@@ -31,7 +31,7 @@ public class SecondAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Invalid OTP for user: " + username);
         }
 
-        Authentication token = new SecondAuthenticationToken(user, secretKey);
+        Authentication token = new SecondAuthenticationToken(user, otpCode);
         token.setAuthenticated(true); // If not, FilterSecurityInterceptor will re-authenticate by delegating AuthenticationManager.
 
         return token;
