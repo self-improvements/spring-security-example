@@ -16,7 +16,7 @@ class LoginController {
 
     @GetMapping("login/2")
     Object secondLogin(Model model) {
-        return "first-login";
+        return "second-login";
     }
 
 }
