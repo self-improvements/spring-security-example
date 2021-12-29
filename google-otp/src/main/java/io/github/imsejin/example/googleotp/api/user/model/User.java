@@ -27,7 +27,7 @@ public class User {
     private String createId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
-    private LocalDateTime createdDateTime;
+    private LocalDateTime createDateTime;
 
     private String modifyId;
 

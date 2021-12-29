@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Select;
 public interface UserMapper {
 
     @Results({
-            @Result(property = "id", column = "ID"),
+            @Result(property = "id", column = "USER_ID"),
             @Result(property = "password", column = "PASSWORD"),
             @Result(property = "otpSecretKey", column = "OTP_SCT_KEY"),
             @Result(property = "name", column = "USER_NM"),
